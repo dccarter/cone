@@ -136,7 +136,7 @@ char *fileSrcUrl(char *cururl, char *srcfn, int newfolder) {
 char *fileLoadSrcWithFolder(char *cururl, char *srcfn, char **fn) {
     char *src;
     *fn = fileSrcUrl(cururl, srcfn, 0);
-    if (src = fileLoad(*fn))
+    if ((src = fileLoad(*fn)))
         return src;
     *fn = fileSrcUrl(cururl, srcfn, 1);
     return fileLoad(*fn);
@@ -148,13 +148,13 @@ char *fileLoadSrcWithFolder(char *cururl, char *srcfn, char **fn) {
 // - return full pathname for source file
 char *fileLoadSrc(char *cururl, char *srcfn, char **fn) {
     char *src;
-    if (src = fileLoadSrcWithFolder(cururl, srcfn, fn))
+    if ((src = fileLoadSrcWithFolder(cururl, srcfn, fn)))
         return src;
     char **searchPaths = fileSearchPaths;
     if (searchPaths == NULL)
         return NULL;
     while (*searchPaths) {
-        if (src = fileLoadSrcWithFolder(*searchPaths++, srcfn, fn))
+        if ((src = fileLoadSrcWithFolder(*searchPaths++, srcfn, fn)))
             return src;
     }
     return NULL;

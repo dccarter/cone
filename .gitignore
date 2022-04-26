@@ -53,6 +53,8 @@ build
 bin
 obj
 lib
+cmake-build-debug
+.idea
 
 # Kernel Module Compile Results
 *.mod*

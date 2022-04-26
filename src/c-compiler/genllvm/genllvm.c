@@ -33,7 +33,7 @@
 #define objext "obj"
 #else
 #define asmext "s"
-#define objext "o"
+#define objext "cone.o"
 #endif
 
 // Generate parameter variable
