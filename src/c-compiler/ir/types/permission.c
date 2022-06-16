@@ -79,13 +79,13 @@ void permInitTypeCheck(INode *perm) {
     if (initmeth == NULL) {
         return;
     }
-    FnSigNode *initsig = (FnSigNode*)itypeGetTypeDcl(initmeth->vtype);
+    FnSigNode *initsig = (FnSigNode*) iTypeGetTypeDcl(initmeth->vtype);
     if (initsig->parms->used != 0) {
         errorMsgNode((INode*)initmeth, ErrorInvType, "Permission init method may not have parameters.");
         return;
     }
-    INode *initrettype = itypeGetTypeDcl(initsig->rettype);
-    if (itypeMatches(initrettype, perm, Coercion) != EqMatch) {
+    INode *initrettype = iTypeGetTypeDcl(initsig->rettype);
+    if (iTypeMatches(initrettype, perm, Coercion) != EqMatch) {
         errorMsgNode((INode*)initmeth, ErrorInvType, "Permission init method must return initial value.");
         return;
     }

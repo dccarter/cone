@@ -57,7 +57,7 @@ void allocateTypeCheck(TypeCheckState *pstate, RefNode **nodep) {
         return;
 
     INode *vtype = ((IExpNode*)node->vtexp)->vtype;
-    if (!itypeIsConcrete(vtype) || itypeIsZeroSize(vtype)) {
+    if (!iTypeIsConcrete(vtype) || iTypeIsZeroSize(vtype)) {
         errorMsgNode(node->vtexp, ErrorInvType, "May not allocate a value of abstract or zero-size type");
     }
     if (node->tag == ArrayAllocTag) {
@@ -81,8 +81,8 @@ void allocateTypeCheck(TypeCheckState *pstate, RefNode **nodep) {
     inodeTypeCheckAny(pstate, &node->vtype);
 
     // Type check that ref region + permission's allocation functions are declared correctly
-    regionAllocTypeCheck(itypeGetTypeDcl(node->region));
-    permInitTypeCheck(itypeGetTypeDcl(node->perm));
+    regionAllocTypeCheck(iTypeGetTypeDcl(node->region));
+    permInitTypeCheck(iTypeGetTypeDcl(node->perm));
 }
 
 // Perform data flow analysis on allocate node

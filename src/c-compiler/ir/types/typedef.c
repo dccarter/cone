@@ -33,5 +33,5 @@ void typedefNameRes(NameResState *pstate, TypedefNode *var) {
 
 // Type check 
 void typedefTypeCheck(TypeCheckState *pstate, TypedefNode *var) {
-    itypeTypeCheck(pstate, &var->typeval);
+    iTypeTypeCheck(pstate, &var->typeval);
 }

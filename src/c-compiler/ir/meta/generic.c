@@ -43,7 +43,7 @@ int genericCaptureType(FnCallNode *gencall, Nodes *genparms, INode *parmtype, IN
         if (genvarname == ((NameUseNode*)parmtype)->namesym) {
             if (*genargp == NULL)
                 *genargp = argtype;
-            else if (!itypeIsSame(*genargp, argtype))
+            else if (!iTypeIsSame(*genargp, argtype))
                 return 0;
             break;
         }
@@ -165,7 +165,7 @@ INode *genericMemoize(TypeCheckState *pstate, FnCallNode *srcgencall, INode *nod
         uint32_t priorcnt;
         INode **nownodesp = &nodesGet(srcgencall->args, 0);
         for (nodesFor(fncallprior->args, priorcnt, priornodesp)) {
-            if (!itypeIsSame(*priornodesp, *nownodesp)) {
+            if (!iTypeIsSame(*priornodesp, *nownodesp)) {
                 match = 0;
                 break;
             }
@@ -266,12 +266,12 @@ int genericSubstitute(TypeCheckState *pstate, FnCallNode **srcgencallp) {
     case FnDclTag:
         // Infer based on function call arguments
         if (genericInferFnParms(pstate, genericinfo->parms,
-            (FnSigNode*)itypeGetTypeDcl(((FnDclNode *)nodetoclone)->vtype), srcgencall, inferredgencall) == 0)
+                                (FnSigNode*) iTypeGetTypeDcl(((FnDclNode *) nodetoclone)->vtype), srcgencall, inferredgencall) == 0)
             return 1;
         break;
     case StructTag:
         // Infer based on type constructor arguments
-        if (genericInferStructParms(pstate, genericinfo->parms, (StructNode*)itypeGetTypeDcl(nodetoclone), srcgencall, inferredgencall) == 0)
+        if (genericInferStructParms(pstate, genericinfo->parms, (StructNode*) iTypeGetTypeDcl(nodetoclone), srcgencall, inferredgencall) == 0)
             return 1;
         break;
     default:

@@ -62,7 +62,7 @@ void ttupleTypeCheck(TypeCheckState *pstate, TupleNode *tuple) {
     INode **nodesp;
     uint32_t cnt;
     for (nodesFor(tuple->elems, cnt, nodesp))
-        itypeTypeCheck(pstate, nodesp);
+        iTypeTypeCheck(pstate, nodesp);
 }
 
 // Compare that two tuples are equivalent
@@ -76,7 +76,7 @@ int ttupleEqual(TupleNode *totype, TupleNode *fromtype) {
     INode **nodesp;
     uint32_t cnt;
     for (nodesFor(totype->elems, cnt, nodesp))
-        if (!itypeIsSame(*nodesp, *fromnodesp++))
+        if (!iTypeIsSame(*nodesp, *fromnodesp++))
             return 0;
     return 1;
 }

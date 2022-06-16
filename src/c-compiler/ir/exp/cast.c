@@ -85,12 +85,12 @@ uint32_t castBitsize(INode *type) {
 void castTypeCheck(TypeCheckState *pstate, CastNode *node) {
     if (iexpTypeCheckAny(pstate, &node->exp) == 0)
         return;
-    if (itypeTypeCheck(pstate, &node->typ) == 0)
+    if (iTypeTypeCheck(pstate, &node->typ) == 0)
         return;
 
     node->vtype = node->typ;
     INode *fromtype = iexpGetTypeDcl(node->exp);
-    INode *totype = itypeGetTypeDcl(node->vtype);
+    INode *totype = iTypeGetTypeDcl(node->vtype);
 
     // Handle reinterpret casts, which must be same size
     if (node->flags & FlagRecast) {
@@ -155,7 +155,7 @@ void castTypeCheck(TypeCheckState *pstate, CastNode *node) {
 void castIsTypeCheck(TypeCheckState *pstate, CastNode *node) {
     node->vtype = (INode*)boolType;
     iexpTypeCheckAny(pstate, &node->exp);
-    itypeTypeCheck(pstate, &node->typ);
+    iTypeTypeCheck(pstate, &node->typ);
     if (!isExpNode(node->exp)) {
         errorMsgNode(node->exp, ErrorInvType, "'is' requires a typed expression to the left");
         return;
@@ -166,7 +166,7 @@ void castIsTypeCheck(TypeCheckState *pstate, CastNode *node) {
     }
 
     // Downcasting type check from a virt ref to a ref, or from a ref to a ref?
-    INode *totype = itypeGetTypeDcl(node->typ);
+    INode *totype = iTypeGetTypeDcl(node->typ);
     INode *fromtype = iexpGetTypeDcl(node->exp);
     if (totype->tag == RefTag && (fromtype->tag == VirtRefTag || fromtype->tag == RefTag)) {
         RefNode *from = (RefNode*)fromtype;
@@ -183,8 +183,8 @@ void castIsTypeCheck(TypeCheckState *pstate, CastNode *node) {
 
         // Under the refs should be a structure. Be sure to is a subtype of from
         // Note that region/permission downcast covariantly, but the structure is contravariant
-        StructNode *fromstr = (StructNode*)itypeGetTypeDcl(((RefNode*)fromtype)->vtexp);
-        StructNode *tostr = (StructNode*)itypeGetTypeDcl(((RefNode*)totype)->vtexp);
+        StructNode *fromstr = (StructNode*) iTypeGetTypeDcl(((RefNode *) fromtype)->vtexp);
+        StructNode *tostr = (StructNode*) iTypeGetTypeDcl(((RefNode *) totype)->vtexp);
         if (fromstr->tag == StructTag && tostr->tag == StructTag) {
             if (from->tag == VirtRefTag) {
                 if (structVirtRefMatches(fromstr, tostr))

@@ -69,7 +69,7 @@ void genlVtable(GenState *gen, Vtable *vtable) {
         if ((*nodesp)->tag == FnDclTag) {
             // Generate a pointer to function signature
             // Note: parm types are not specified to avoid LLVM type check errors on self parm
-            FnSigNode *fnsig = (FnSigNode*)itypeGetTypeDcl(((FnDclNode *)*nodesp)->vtype);
+            FnSigNode *fnsig = (FnSigNode*) iTypeGetTypeDcl(((FnDclNode *) *nodesp)->vtype);
             LLVMTypeRef *param_types = (LLVMTypeRef *)memAllocBlk(fnsig->parms->used * sizeof(LLVMTypeRef));
             LLVMTypeRef *parm = param_types;
             INode **nodesp;
@@ -159,7 +159,7 @@ void genlSetupTaggedTrait(GenState *gen, StructNode *base) {
         uint32_t cnt;
         for (nodelistFor(&base->fields, cnt, nodesp)) {
             if ((*nodesp)->flags & IsTagField) {
-                EnumNode *enumnode = (EnumNode *)itypeGetTypeDcl(*nodesp);
+                EnumNode *enumnode = (EnumNode *) iTypeGetTypeDcl(*nodesp);
                 if (base->derived->used > 0x1000000)
                     enumnode->bytes = 4;
                 else if (base->derived->used > 0x10000)
@@ -187,7 +187,7 @@ void genlSetupTaggedTrait(GenState *gen, StructNode *base) {
         // with optimization flag
         if (nonenode) {
             FieldDclNode *fld = (FieldDclNode*)nodelistGet(&somenode->fields, 1);
-            INode *fldtype = itypeGetTypeDcl(fld->vtype);
+            INode *fldtype = iTypeGetTypeDcl(fld->vtype);
             if (fldtype->tag == PtrTag || fldtype->tag == RefTag
                 || fldtype->tag == VirtRefTag || fldtype->tag == ArrayRefTag) {
 
@@ -297,7 +297,7 @@ LLVMTypeRef _genlType(GenState *gen, char *name, INode *typ) {
     case VirtRefTag:
     {
         RefNode *refnode = (RefNode*)typ;
-        StructNode *trait = (StructNode*)itypeGetTypeDcl(refnode->vtexp);
+        StructNode *trait = (StructNode*) iTypeGetTypeDcl(refnode->vtexp);
         if (trait->vtable->llvmreftype == NULL)
             genlVtable(gen, trait->vtable);
         return trait->vtable->llvmreftype;
@@ -409,7 +409,7 @@ LLVMTypeRef _genlType(GenState *gen, char *name, INode *typ) {
 // Generate a type value
 LLVMTypeRef genlType(GenState *gen, INode *typ) {
     char *name = "";
-    INode *dcltype = itypeGetTypeDcl(typ);
+    INode *dcltype = iTypeGetTypeDcl(typ);
     if (isNamedNode(dcltype)) {
         // with vtype name use, we can memoize type value and give it a name
         INsTypeNode *dclnode = (INsTypeNode*)dcltype;

@@ -12,29 +12,29 @@
 
 // Return node's type's declaration node
 // (Note: only use after it has been type-checked)
-INode *itypeGetTypeDcl(INode *type) {
-    assert(isTypeNode(type));
+INode *iTypeGetTypeDcl(INode *node) {
+    assert(isTypeNode(node));
     while (1) {
-        switch (type->tag) {
+        switch (node->tag) {
         case TypeNameUseTag:
-            type = ((NameUseNode *)type)->dclnode;
+            node = ((NameUseNode *)node)->dclnode;
             break;
         case TypedefTag:
-            type = ((TypedefNode *)type)->typeval;
+            node = ((TypedefNode *)node)->typeval;
         default:
-            return type;
+            return node;
         }
     }
 }
 
 // Return node's type's declaration node (or vtexp if a ref or ptr)
-INode *itypeGetDerefTypeDcl(INode *node) {
-    INode *typnode = itypeGetTypeDcl(node);
-    if (typnode->tag == RefTag || typnode->tag == VirtRefTag)
-        return itypeGetTypeDcl(((RefNode*)node)->vtexp);
+INode *iTypeGetDerefTypeDcl(INode *node) {
+    INode *typNode = iTypeGetTypeDcl(node);
+    if (typNode->tag == RefTag || typNode->tag == VirtRefTag)
+        return iTypeGetTypeDcl(((RefNode *) node)->vtexp);
     else if (node->tag == PtrTag)
-        return itypeGetTypeDcl(((StarNode*)node)->vtexp);
-    return typnode;
+        return iTypeGetTypeDcl(((StarNode *) node)->vtexp);
+    return typNode;
 }
 
 // Look for named field/method in type
@@ -53,7 +53,7 @@ INode *iTypeFindFnField(INode *type, Name *name) {
 }
 
 // Type check node, expecting it to be a type. Give error and return 0, if not.
-int itypeTypeCheck(TypeCheckState *pstate, INode **node) {
+int iTypeTypeCheck(TypeCheckState *pstate, INode **node) {
     inodeTypeCheckAny(pstate, node);
     if (!isTypeNode(*node)) {
         errorMsgNode(*node, ErrorNotTyped, "Expected a type.");
@@ -64,10 +64,10 @@ int itypeTypeCheck(TypeCheckState *pstate, INode **node) {
 
 // Return 1 if nominally (or structurally) identical, 0 otherwise
 // Nodes must both be types, but may be name use or declare nodes
-int itypeIsSame(INode *node1, INode *node2) {
+int iTypeIsSame(INode *node1, INode *node2) {
 
-    node1 = itypeGetTypeDcl(node1);
-    node2 = itypeGetTypeDcl(node2);
+    node1 = iTypeGetTypeDcl(node1);
+    node2 = iTypeGetTypeDcl(node2);
 
     // If they are the same type name, types match
     if (node1 == node2)
@@ -100,29 +100,29 @@ int itypeIsSame(INode *node1, INode *node2) {
 }
 
 // Calculate the hash for a type to use in type table indexing
-size_t itypeHash(INode *node) {
-    INode *type = itypeGetTypeDcl(node);
-    switch (type->tag) {
+size_t iTypeHash(INode *type) {
+    INode *dclType = iTypeGetTypeDcl(type);
+    switch (dclType->tag) {
     case RefTag:
     case VirtRefTag:
-        return refHash((RefNode*)type);
+        return refHash((RefNode*)dclType);
     case ArrayRefTag:
-        return arrayRefHash((RefNode*)type);
+        return arrayRefHash((RefNode*)dclType);
     case PermTag:
         return ((size_t)immPerm) >> 3;  // Hash for all static permissions is the same
     default:
         // Turn type's pointer into the hash, removing expected 0's in bottom bits
-        return ((size_t)type) >> 3;
+        return ((size_t)dclType) >> 3;
     }
 }
 
 // Return 1 if nominally (or structurally) identical at runtime, 0 otherwise
 // Nodes must both be types, but may be name use or declare nodes
 // Is a companion for indexing into the type table
-int itypeIsRunSame(INode *node1, INode *node2) {
+int iTypeIsRunSame(INode *node1, INode *node2) {
 
-    node1 = itypeGetTypeDcl(node1);
-    node2 = itypeGetTypeDcl(node2);
+    node1 = iTypeGetTypeDcl(node1);
+    node2 = iTypeGetTypeDcl(node2);
 
     // If they are the same type name, types match
     if (node1 == node2)
@@ -156,83 +156,83 @@ int itypeIsRunSame(INode *node1, INode *node2) {
     }
 }
 
-// Is totype equivalent or a subtype of fromtype
-TypeCompare itypeMatches(INode *totype, INode *fromtype, SubtypeConstraint constraint) {
-    fromtype = itypeGetTypeDcl(fromtype);
-    totype = itypeGetTypeDcl(totype);
+// Is toType equivalent or a subtype of fromType
+TypeCompare iTypeMatches(INode *toType, INode *fromType, SubtypeConstraint constraint) {
+    fromType = iTypeGetTypeDcl(fromType);
+    toType = iTypeGetTypeDcl(toType);
 
     // If they are the same value type info, types match
-    if (totype == fromtype)
+    if (toType == fromType)
         return EqMatch;
 
     // Type-specific matching logic
-    switch (totype->tag) {
+    switch (toType->tag) {
 
     case UintNbrTag:
     case IntNbrTag:
     case FloatNbrTag:
-        return nbrMatches(totype, fromtype, constraint);
+        return nbrMatches(toType, fromType, constraint);
 
     case StructTag:
-        return structMatches((StructNode*)totype, fromtype, constraint);
+        return structMatches((StructNode*)toType, fromType, constraint);
 
     case TTupleTag:
-        if (fromtype->tag == TTupleTag)
-            return itypeIsSame(totype, fromtype) ? EqMatch : NoMatch;
+        if (fromType->tag == TTupleTag)
+            return iTypeIsSame(toType, fromType) ? EqMatch : NoMatch;
         return NoMatch;
 
     case ArrayTag:
-        if (fromtype->tag == ArrayTag)
-            return arrayMatches((ArrayNode*)totype, (ArrayNode*)fromtype, constraint);
+        if (fromType->tag == ArrayTag)
+            return arrayMatches((ArrayNode*)toType, (ArrayNode*)fromType, constraint);
         return NoMatch;
 
     case FnSigTag:
-        if (fromtype->tag == FnSigTag)
-            return fnSigMatches((FnSigNode*)totype, (FnSigNode*)fromtype, constraint);
+        if (fromType->tag == FnSigTag)
+            return fnSigMatches((FnSigNode*)toType, (FnSigNode*)fromType, constraint);
         return NoMatch;
 
     case RefTag:
-        if (fromtype->tag == RefTag)
-            return refMatches((RefNode*)totype, (RefNode*)fromtype, constraint);
+        if (fromType->tag == RefTag)
+            return refMatches((RefNode*)toType, (RefNode*)fromType, constraint);
         return NoMatch;
 
     case VirtRefTag:
-        if (fromtype->tag == VirtRefTag)
-            return refvirtMatches((RefNode*)totype, (RefNode*)fromtype, constraint);
-        else if (fromtype->tag == RefTag)
-            return refvirtMatchesRef((RefNode*)totype, (RefNode*)fromtype, constraint);
+        if (fromType->tag == VirtRefTag)
+            return refvirtMatches((RefNode*)toType, (RefNode*)fromType, constraint);
+        else if (fromType->tag == RefTag)
+            return refvirtMatchesRef((RefNode*)toType, (RefNode*)fromType, constraint);
         return NoMatch;
 
     case ArrayRefTag:
-        if (fromtype->tag == ArrayRefTag)
-            return arrayRefMatches((RefNode*)totype, (RefNode*)fromtype, constraint);
-        else if (fromtype->tag == RefTag)
-            return arrayRefMatchesRef((RefNode*)totype, (RefNode*)fromtype, constraint);
+        if (fromType->tag == ArrayRefTag)
+            return arrayRefMatches((RefNode*)toType, (RefNode*)fromType, constraint);
+        else if (fromType->tag == RefTag)
+            return arrayRefMatchesRef((RefNode*)toType, (RefNode*)fromType, constraint);
         return NoMatch;
 
     case PtrTag:
-        if (fromtype->tag == RefTag || fromtype->tag == ArrayRefTag)
-            return itypeIsSame(((RefNode*)fromtype)->vtexp, ((StarNode*)totype)->vtexp) ? ConvSubtype : NoMatch;
-        if (fromtype->tag == PtrTag)
-            return ptrMatches((StarNode*)totype, (StarNode*)fromtype, constraint);
+        if (fromType->tag == RefTag || fromType->tag == ArrayRefTag)
+            return iTypeIsSame(((RefNode *) fromType)->vtexp, ((StarNode *) toType)->vtexp) ? ConvSubtype : NoMatch;
+        if (fromType->tag == PtrTag)
+            return ptrMatches((StarNode*)toType, (StarNode*)fromType, constraint);
         return NoMatch;
 
     case VoidTag:
-        return fromtype->tag == VoidTag ? EqMatch : NoMatch;
+        return fromType->tag == VoidTag ? EqMatch : NoMatch;
 
     default:
-        return itypeIsSame(totype, fromtype) ? EqMatch : NoMatch;
+        return iTypeIsSame(toType, fromType) ? EqMatch : NoMatch;
     }
 }
 
 // Return a type that is the supertype of both type nodes, or NULL if none found
-INode *itypeFindSuper(INode *type1, INode *type2) {
-    INode *typ1 = itypeGetTypeDcl(type1);
-    INode *typ2 = itypeGetTypeDcl(type2);
+INode *iTypeFindSuper(INode *type1, INode *type2) {
+    INode *typ1 = iTypeGetTypeDcl(type1);
+    INode *typ2 = iTypeGetTypeDcl(type2);
 
     if (typ1->tag != typ2->tag)
         return NULL;
-    if (itypeIsSame(typ1, typ2))
+    if (iTypeIsSame(typ1, typ2))
         return type1;
     switch (typ1->tag) {
     case UintNbrTag:
@@ -253,7 +253,7 @@ INode *itypeFindSuper(INode *type1, INode *type2) {
 }
 
 // Add type mangle info to buffer
-char *itypeMangle(char *bufp, INode *vtype) {
+char *iTypeMangle(char *bufp, INode *vtype) {
     switch (vtype->tag) {
     case NameUseTag:
     case TypeNameUseTag:
@@ -268,17 +268,17 @@ char *itypeMangle(char *bufp, INode *vtype) {
         RefNode *reftype = (RefNode *)vtype;
         *bufp++ = vtype->tag==VirtRefTag? '<' : ArrayRefTag? '+' : '&';
         if (permIsSame(reftype->perm, (INode*)roPerm)) {
-            bufp = itypeMangle(bufp, reftype->perm);
+            bufp = iTypeMangle(bufp, reftype->perm);
             *bufp++ = ' ';
         }
-        bufp = itypeMangle(bufp, reftype->vtexp);
+        bufp = iTypeMangle(bufp, reftype->vtexp);
         break;
     }
     case PtrTag:
     {
         StarNode *vtexp = (StarNode *)vtype;
         *bufp++ = '*';
-        bufp = itypeMangle(bufp, vtexp->vtexp);
+        bufp = iTypeMangle(bufp, vtexp->vtexp);
         break;
     }
     case UintNbrTag:
@@ -296,24 +296,24 @@ char *itypeMangle(char *bufp, INode *vtype) {
 
 // Return true if type has a concrete and instantiable value. 
 // Opaque structs, traits, functions will be false.
-int itypeIsConcrete(INode *type) {
-    INode *dcltype = itypeGetTypeDcl(type);
+int iTypeIsConcrete(INode *type) {
+    INode *dcltype = iTypeGetTypeDcl(type);
     return !(dcltype->flags & OpaqueType);
 }
 
 // Return true if type has zero size (e.g., void, empty struct)
-int itypeIsZeroSize(INode *type) {
-    INode *dcltype = itypeGetTypeDcl(type);
+int iTypeIsZeroSize(INode *type) {
+    INode *dcltype = iTypeGetTypeDcl(type);
     return dcltype->flags & ZeroSizeType;
 }
 
 // Return true if type implements move semantics
-int itypeIsMove(INode *type) {
-    return itypeGetTypeDcl(type)->flags & MoveType;
+int iTypeIsMove(INode *type) {
+    return iTypeGetTypeDcl(type)->flags & MoveType;
 }
 
 // Return true if this is a generic type
-int itypeIsGenericType(INode *type) {
+int iTypeIsGenericType(INode *type) {
     if (type->tag != FnCallTag)
         return 0;
     FnCallNode *gentype = (FnCallNode*)type;

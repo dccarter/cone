@@ -37,7 +37,7 @@ LLVMValueRef genlIf(GenState *gen, IfNode *ifnode) {
     uint32_t cnt;
 
     // If we are returning a value in each block, set up space for phi info
-    vtype = itypeGetTypeDcl(ifnode->vtype);
+    vtype = iTypeGetTypeDcl(ifnode->vtype);
     count = ifnode->condblk->used / 2;
     i = phicnt = 0;
     if (vtype != unknownType) {
@@ -399,7 +399,7 @@ LLVMValueRef genlFnCall(GenState *gen, FnCallNode *fncall) {
 // - Array ref to ptr or size
 LLVMValueRef genlConvert(GenState *gen, INode* exp, INode* to) {
     INode *fromtype = iexpGetTypeDcl(exp);
-    INode *totype = itypeGetTypeDcl(to);
+    INode *totype = iTypeGetTypeDcl(to);
     LLVMValueRef genexp = genlExpr(gen, exp);
 
     // Handle number to number casts, depending on relative size and encoding format
@@ -482,8 +482,8 @@ LLVMValueRef genlConvert(GenState *gen, INode* exp, INode* to) {
     {
         // Build a fat ptr whose vtable maps the fromtype struct to the totype trait
         assert(fromtype->tag == RefTag);
-        StructNode *trait = (StructNode*)itypeGetTypeDcl(((RefNode*)totype)->vtexp);
-        StructNode *strnode = (StructNode*)itypeGetTypeDcl(((RefNode*)fromtype)->vtexp);
+        StructNode *trait = (StructNode*) iTypeGetTypeDcl(((RefNode *) totype)->vtexp);
+        StructNode *strnode = (StructNode*) iTypeGetTypeDcl(((RefNode *) fromtype)->vtexp);
         Vtable *vtable = ((StructNode*)trait)->vtable;
         if (vtable->llvmvtable == NULL)
             genlVtable(gen, vtable);
@@ -546,7 +546,7 @@ LLVMValueRef genlConvert(GenState *gen, INode* exp, INode* to) {
 
 // Reinterpret a value as if it were another type
 LLVMValueRef genlRecast(GenState *gen, INode* exp, INode* to) {
-    INode *totype = itypeGetTypeDcl(to);
+    INode *totype = iTypeGetTypeDcl(to);
     LLVMValueRef genexp = genlExpr(gen, exp);
     if (totype->tag == StructTag) {
         // LLVM does not bitcast structs, so this store/load hack gets around that problem
@@ -609,8 +609,8 @@ LLVMValueRef genlLocalVar(GenState *gen, VarDclNode *var) {
 LLVMValueRef genlIsType(GenState *gen, CastNode *isnode) {
     LLVMValueRef val = genlExpr(gen, isnode->exp);
     INode *exptype = iexpGetTypeDcl(isnode->exp);
-    INode *istype = itypeGetTypeDcl(isnode->typ);
-    StructNode *structtype = (StructNode*)(istype->tag == RefTag ? itypeGetTypeDcl(((RefNode*)istype)->vtexp) : istype);
+    INode *istype = iTypeGetTypeDcl(isnode->typ);
+    StructNode *structtype = (StructNode*)(istype->tag == RefTag ? iTypeGetTypeDcl(((RefNode *) istype)->vtexp) : istype);
 
     // If pattern matching a virtual reference, compare vtable pointers
     if (exptype->tag == VirtRefTag) {
@@ -847,13 +847,13 @@ LLVMValueRef genlExpr(GenState *gen, INode *termnode) {
             for (nodesFor(lit->elems, cnt, nodesp))
                 *valuep++ = genlExpr(gen, *nodesp);
         }
-        INode *elemtype = nodesGet(((ArrayNode *)itypeGetTypeDcl(lit->vtype))->elems, 0);
+        INode *elemtype = nodesGet(((ArrayNode *) iTypeGetTypeDcl(lit->vtype))->elems, 0);
         return LLVMConstArray(genlType(gen, elemtype), values, size);
     }
     case TypeLitTag:
     {
         FnCallNode *lit = (FnCallNode *)termnode;
-        INode *littype = itypeGetTypeDcl(lit->vtype);
+        INode *littype = iTypeGetTypeDcl(lit->vtype);
         uint32_t size = lit->args->used;
         INode **nodesp;
         uint32_t cnt;
@@ -926,7 +926,7 @@ LLVMValueRef genlExpr(GenState *gen, INode *termnode) {
             int16_t *countp = anode->counts;
             for (nodesFor(tuple->elems, cnt, nodesp)) {
                 if (*countp != 0) {
-                    reftype = (RefNode *)itypeGetTypeDcl(*nodesp);
+                    reftype = (RefNode *) iTypeGetTypeDcl(*nodesp);
                     LLVMValueRef strval = LLVMBuildExtractValue(gen->builder, val, index, "");
                     if (isRegion(reftype->region, soName))
                         genlDealiasOwn(gen, strval, reftype);
@@ -1051,7 +1051,7 @@ LLVMValueRef genlExpr(GenState *gen, INode *termnode) {
     {
         RefNode *anode = (RefNode*)termnode;
         RefNode *reftype = (RefNode *)anode->vtype;
-        INode *arraytype = itypeGetTypeDcl(((IExpNode*)anode->vtexp)->vtype);
+        INode *arraytype = iTypeGetTypeDcl(((IExpNode *) anode->vtexp)->vtype);
         if (arraytype->tag == ArrayTag) {
             LLVMValueRef tupleval = LLVMGetUndef(genlType(gen, (INode*)reftype));
             LLVMTypeRef ptrtype = LLVMPointerType(genlType(gen, reftype->vtexp), 0);

@@ -214,7 +214,7 @@ void fnCallFinalizeArgs(FnCallNode *node) {
     assert(fnsig->tag == FnSigTag);
 
     // Establish the return type of the function call (or error if not what was expected)
-    if (node->vtype != unknownType && !itypeIsSame(fnsig->rettype, node->vtype)) {
+    if (node->vtype != unknownType && !iTypeIsSame(fnsig->rettype, node->vtype)) {
         errorMsgNode((INode*)node, ErrorNoMeth, "Cannot find valid `%s` method that returns same type that it takes.", &node->methfld->namesym);
     }
     node->vtype = fnsig->rettype;
@@ -370,7 +370,7 @@ int fnCallLowerPtrMethod(FnCallNode *callnode, INsTypeNode *methtype) {
             INode *arg1type = iexpGetTypeDcl(nodesGet(args, 1));
             if (parm1type->tag == PtrTag || parm1type->tag == RefTag) {
                 // When pointers are involved, we want to ensure they are the same type
-                if (!itypeIsSame(arg1type, iexpGetTypeDcl(nodesGet(args, 0))))
+                if (!iTypeIsSame(arg1type, iexpGetTypeDcl(nodesGet(args, 0))))
                     continue;
             }
             else {
@@ -609,7 +609,7 @@ void fnCallTypeCheck(TypeCheckState *pstate, FnCallNode **nodep) {
 
     // Regular reference
     case RefTag: {
-        INode *objdereftype = itypeGetTypeDcl(((RefNode *)objtype)->vtexp);
+        INode *objdereftype = iTypeGetTypeDcl(((RefNode *) objtype)->vtexp);
 
         // Handle calling a function-by-ref (only callable using parens)
         if (objdereftype->tag == FnSigTag && !node->methfld) {

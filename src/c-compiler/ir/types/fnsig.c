@@ -65,7 +65,7 @@ void fnSigTypeCheck(TypeCheckState *pstate, FnSigNode *sig) {
     uint32_t cnt;
     for (nodesFor(sig->parms, cnt, nodesp))
         inodeTypeCheckAny(pstate, nodesp);
-    itypeTypeCheck(pstate, &sig->rettype);
+    iTypeTypeCheck(pstate, &sig->rettype);
 }
 
 // Compare two function signatures to see if they are equivalent
@@ -74,14 +74,14 @@ int fnSigEqual(FnSigNode *node1, FnSigNode *node2) {
     uint32_t cnt;
 
     // Return types and number of parameters must match
-    if (!itypeIsSame(node1->rettype, node2->rettype)
+    if (!iTypeIsSame(node1->rettype, node2->rettype)
         || node1->parms->used != node2->parms->used)
         return 0;
 
     // Every parameter's type must also match
     nodes2p = &nodesGet(node2->parms, 0);
     for (nodesFor(node1->parms, cnt, nodes1p)) {
-        if (!itypeIsSame(*nodes1p, *nodes2p))
+        if (!iTypeIsSame(*nodes1p, *nodes2p))
             return 0;
         nodes2p++;
     }
@@ -96,14 +96,14 @@ int fnSigVrefEqual(FnSigNode *node1, FnSigNode *node2) {
     uint32_t cnt;
 
     // Return types and number of parameters must match
-    if (!itypeIsSame(node1->rettype, node2->rettype)
+    if (!iTypeIsSame(node1->rettype, node2->rettype)
         || node1->parms->used != node2->parms->used)
         return 0;
 
     // Every parameter's type must also match
     nodes2p = &nodesGet(node2->parms, 0);
     for (nodesFor(node1->parms, cnt, nodes1p)) {
-        if (cnt < node1->parms->used && !itypeIsSame(*nodes1p, *nodes2p))
+        if (cnt < node1->parms->used && !iTypeIsSame(*nodes1p, *nodes2p))
             return 0;
         nodes2p++;
     }
@@ -124,7 +124,7 @@ TypeCompare fnSigMatches(FnSigNode *to, FnSigNode *from, SubtypeConstraint const
     fromnodesp = &nodesGet(from->parms, 0);
     for (nodesFor(to->parms, cnt, tonodesp)) {
         // Match for parameters is contravariant, switching order of to/from
-        switch (itypeMatches(iexpGetTypeDcl(*fromnodesp), iexpGetTypeDcl(*tonodesp), constraint)) {
+        switch (iTypeMatches(iexpGetTypeDcl(*fromnodesp), iexpGetTypeDcl(*tonodesp), constraint)) {
         case NoMatch:
             return NoMatch;
         case CastSubtype:
@@ -140,7 +140,7 @@ TypeCompare fnSigMatches(FnSigNode *to, FnSigNode *from, SubtypeConstraint const
     }
 
     // Return type is covariant
-    switch (itypeMatches(to->rettype, from->rettype, constraint)) {
+    switch (iTypeMatches(to->rettype, from->rettype, constraint)) {
     case NoMatch:
         return NoMatch;
     case CastSubtype:
@@ -157,7 +157,7 @@ TypeCompare fnSigMatches(FnSigNode *to, FnSigNode *from, SubtypeConstraint const
 
 // Return true if type of from-exp matches totype
 int fnSigCoerce(FnSigNode *totype, INode **fromexp) {
-    return itypeMatches((INode*)totype, iexpGetTypeDcl(*fromexp), Coercion) == EqMatch;
+    return iTypeMatches((INode *) totype, iexpGetTypeDcl(*fromexp), Coercion) == EqMatch;
 }
 
 // Will the function call (caller) be able to call the 'to' function

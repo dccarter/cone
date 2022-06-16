@@ -42,7 +42,7 @@ INode *cloneRefNode(CloneState *cstate, RefNode *node) {
 void refAdoptInfections(RefNode *refnode) {
     if (refnode->perm == NULL || refnode->vtexp == unknownType)
         return;  // Wait until we have this info
-    if (!(permGetFlags(refnode->perm) & MayAlias) || itypeIsMove(refnode->region))
+    if (!(permGetFlags(refnode->perm) & MayAlias) || iTypeIsMove(refnode->region))
         refnode->flags |= MoveType;
     if (refnode->perm == (INode*)mutPerm || refnode->perm == (INode*)roPerm 
         || (refnode->vtexp->flags & ThreadBound))
@@ -109,13 +109,13 @@ void refTypeCheck(TypeCheckState *pstate, RefNode *node) {
     if (node->perm == unknownType)
         node->perm = newPermUseNode(node->vtexp->tag == FnSigTag ? opaqPerm :
         (node->region == borrowRef ? roPerm : uniPerm));
-    itypeTypeCheck(pstate, &node->region);
+    iTypeTypeCheck(pstate, &node->region);
     if (node->region != borrowRef &&
-        itypeGetTypeDcl(node->region)->tag != StructTag) {
+            iTypeGetTypeDcl(node->region)->tag != StructTag) {
         errorMsgNode(node->region, ErrorInvType, "Reference's region must be a struct type.");
     }
-    itypeTypeCheck(pstate, (INode**)&node->perm);
-    if (itypeTypeCheck(pstate, &node->vtexp) == 0)
+    iTypeTypeCheck(pstate, (INode **) &node->perm);
+    if (iTypeTypeCheck(pstate, &node->vtexp) == 0)
         return;
     refAdoptInfections(node);
     
@@ -127,13 +127,13 @@ void refTypeCheck(TypeCheckState *pstate, RefNode *node) {
 void refvirtTypeCheck(TypeCheckState *pstate, RefNode *node) {
     if (node->perm == unknownType)
         node->perm = newPermUseNode(node->region == borrowRef ? roPerm : uniPerm);
-    itypeTypeCheck(pstate, &node->region);
-    itypeTypeCheck(pstate, (INode**)&node->perm);
-    if (itypeTypeCheck(pstate, &node->vtexp) == 0)
+    iTypeTypeCheck(pstate, &node->region);
+    iTypeTypeCheck(pstate, (INode **) &node->perm);
+    if (iTypeTypeCheck(pstate, &node->vtexp) == 0)
         return;
     refAdoptInfections(node);
 
-    StructNode *trait = (StructNode*)itypeGetTypeDcl(node->vtexp);
+    StructNode *trait = (StructNode*) iTypeGetTypeDcl(node->vtexp);
     if (trait->tag != StructTag) {
         errorMsgNode((INode*)node, ErrorInvType, "A virtual reference must be to a struct or trait.");
         return;
@@ -145,29 +145,29 @@ void refvirtTypeCheck(TypeCheckState *pstate, RefNode *node) {
 
 // Compare two reference signatures to see if they are equivalent
 int refIsSame(RefNode *node1, RefNode *node2) {
-    return itypeIsSame(node1->vtexp,node2->vtexp) 
-        && permIsSame(node1->perm, node2->perm)
-        && itypeIsSame(node1->region, node2->region);
+    return iTypeIsSame(node1->vtexp, node2->vtexp)
+           && permIsSame(node1->perm, node2->perm)
+           && iTypeIsSame(node1->region, node2->region);
 }
 
 // Calculate hash for a structural reference type
 size_t refHash(RefNode *node) {
     size_t hash = 5381 + node->tag;
-    hash = ((hash << 5) + hash) ^ itypeHash(node->region);
-    hash = ((hash << 5) + hash) ^ itypeHash(node->perm);
-    return ((hash << 5) + hash) ^ itypeHash(node->vtype);
+    hash = ((hash << 5) + hash) ^ iTypeHash(node->region);
+    hash = ((hash << 5) + hash) ^ iTypeHash(node->perm);
+    return ((hash << 5) + hash) ^ iTypeHash(node->vtype);
 }
 
 // Compare two reference signatures to see if they are equivalent at runtime
 int refIsRunSame(RefNode *node1, RefNode *node2) {
-    return itypeIsSame(node1->vtexp, node2->vtexp)
-        && itypeIsRunSame(node1->perm, node2->perm)
-        && itypeIsRunSame(node1->region, node2->region);
+    return iTypeIsSame(node1->vtexp, node2->vtexp)
+           && iTypeIsRunSame(node1->perm, node2->perm)
+           && iTypeIsRunSame(node1->region, node2->region);
 }
 
 // Will from region coerce to a to region
 TypeCompare regionMatches(INode *to, INode *from, SubtypeConstraint constraint) {
-    if (itypeIsSame(to, from))
+    if (iTypeIsSame(to, from))
         return EqMatch;
     if (to == borrowRef)
         return CastSubtype;
@@ -195,13 +195,13 @@ TypeCompare refMatches(RefNode *to, RefNode *from, SubtypeConstraint constraint)
     switch (permGetFlags(to->perm) & (MayWrite | MayRead)) {
     case 0:
     case MayRead:
-        match = itypeMatches(to->vtexp, from->vtexp, Regref); // covariant
+        match = iTypeMatches(to->vtexp, from->vtexp, Regref); // covariant
         break;
     case MayWrite:
-        match = itypeMatches(from->vtexp, to->vtexp, Regref); // contravariant
+        match = iTypeMatches(from->vtexp, to->vtexp, Regref); // contravariant
         break;
     case MayRead | MayWrite:
-        return itypeIsSame(to->vtexp, from->vtexp) ? result : NoMatch; // invariant
+        return iTypeIsSame(to->vtexp, from->vtexp) ? result : NoMatch; // invariant
     }
     switch (match) {
     case EqMatch:
@@ -237,8 +237,8 @@ TypeCompare refvirtMatchesRef(RefNode *to, RefNode *from, SubtypeConstraint cons
     // Handle value type without worrying about mutability-triggered variance
     // This is because a virtual reference "supertype" can never change the value's underlying type
     // Virtual references are based on structs/traits
-    StructNode *tovtypedcl = (StructNode*)itypeGetTypeDcl(to->vtexp);
-    StructNode *fromvtypedcl = (StructNode*)itypeGetTypeDcl(from->vtexp);
+    StructNode *tovtypedcl = (StructNode*) iTypeGetTypeDcl(to->vtexp);
+    StructNode *fromvtypedcl = (StructNode*) iTypeGetTypeDcl(from->vtexp);
     if (tovtypedcl->tag != StructTag || fromvtypedcl->tag != StructTag)
         return NoMatch;
 
@@ -263,7 +263,7 @@ TypeCompare refvirtMatchesRef(RefNode *to, RefNode *from, SubtypeConstraint cons
 TypeCompare refvirtMatches(RefNode *to, RefNode *from, SubtypeConstraint constraint) {
     // For now, there is no supported way to convert a virtual ref from one value type to another
     // This could change later, maybe for monomorphization or maybe for runtime coercion
-    if (!itypeIsSame(to->vtexp, from->vtexp))
+    if (!iTypeIsSame(to->vtexp, from->vtexp))
         return NoMatch;
 
     // However, region, permission and lifetime can be supertyped
@@ -273,11 +273,11 @@ TypeCompare refvirtMatches(RefNode *to, RefNode *from, SubtypeConstraint constra
 
 // Return a type that is the supertype of both type nodes, or NULL if none found
 INode *refFindSuper(INode *type1, INode *type2) {
-    RefNode *typ1 = (RefNode *)itypeGetTypeDcl(type1);
-    RefNode *typ2 = (RefNode *)itypeGetTypeDcl(type2);
+    RefNode *typ1 = (RefNode *) iTypeGetTypeDcl(type1);
+    RefNode *typ2 = (RefNode *) iTypeGetTypeDcl(type2);
 
-    if (itypeGetTypeDcl(typ1->region) != itypeGetTypeDcl(typ2->region)
-        || itypeGetTypeDcl(typ1->perm) != itypeGetTypeDcl(typ2->perm))
+    if (iTypeGetTypeDcl(typ1->region) != iTypeGetTypeDcl(typ2->region)
+        || iTypeGetTypeDcl(typ1->perm) != iTypeGetTypeDcl(typ2->perm))
         return NULL;
 
     INode *vtexp = structRefFindSuper(typ1->vtexp, typ2->vtexp);

@@ -42,7 +42,7 @@ void lexInject(char *src, char *url) {
     lex->next = NULL;
     lex->prev = prev;
 
-    // Skip over UTF8 Byte-order mark (BOM = U+FEFF) at start of source, if there
+    // Skip over UTF8 Byte-order mark (BOM = U+FEFF) at start of source, if there is
     if (*src=='\xEF' && *(src+1)=='\xBB' && *(src+2)=='\xBF')
         src += 3;
 
@@ -55,6 +55,7 @@ void lexInject(char *src, char *url) {
     lex->srcp = lex->tokp = lex->linep = src;
     lex->linenbr = 1;
     lex->flags = 0;
+    lex->strexpr = StrExprOff;
     lex->tokPosInLine = 0;
     lex->indentch = '\0';
     lex->curindent = 0;
@@ -215,7 +216,7 @@ void lexStmtStart() {
 }
 
 // Return true if current token is first on a line that has not been indented
-// and does not have any open parantheses or brackets
+// and does not have any open parentheses or brackets
 int lexIsStmtBreak() {
     return lexIsEndOfLine() && lex->curindent <= lex->stmtindent 
         && lex->blkStack[lex->blkStackLvl].paranscnt == 0;
@@ -464,9 +465,19 @@ void lexScanNumber(char *srcp) {
 
     // A leading zero may indicate a non-base 10 number
     base = 10;
-    if (*srcp=='0' && (*(srcp+1)=='x' || *(srcp+1)=='X')) {
-        base = 16;
-        srcp += 2;
+    if (*srcp=='0') {
+        if (*(srcp+1)=='x' || *(srcp+1)=='X') {
+            base = 16;
+            srcp += 2;
+        }
+        else if ((*(srcp+1)=='b' || *(srcp+1)=='B')) {
+            base = 2;
+            srcp += 2;
+        }
+        else if ((*(srcp+1) >= '0' && *(srcp+1) <= '7')) {
+            base = 8;
+            srcp += 1;
+        }
     }
 
     // Validate and process remaining numeric digits
@@ -696,12 +707,22 @@ void lexNextTokenx() {
 
         // " " - string surrounded with double quotes
         case '"':
+            if (lex->strexpr != StrExprOff) {
+                lexReturnPuncTok(RStrExprToken, 1);
+            }
             lexScanString(srcp);
             return;
 
+        // StringExpr
+        case 'f':
+            if (*(srcp + 1) == '"') {
+                lex->strexpr = StrExprExpectStr;
+                lexReturnPuncTok(LStrExprToken, 1);
+            }
+            // fallthrough intentional
         // Identifier
         case 'a': case 'b': case 'c': case 'd': case 'e':
-        case 'f': case 'g': case 'h': case 'i': case 'j':
+        case 'g': case 'h': case 'i': case 'j':
         case 'k': case 'l': case 'm': case 'n': case 'o':
         case 'p': case 'q': case 'r': case 's': case 't':
         case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':

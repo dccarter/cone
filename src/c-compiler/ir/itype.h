@@ -50,48 +50,48 @@ typedef struct ITypeNode {
 
 // Return node's type's declaration node
 // (Note: only use after it has been type-checked)
-INode *itypeGetTypeDcl(INode *node);
+INode *iTypeGetTypeDcl(INode *node);
 
 // Return node's type's declaration node (or vtexp if a ref or ptr)
-INode *itypeGetDerefTypeDcl(INode *node);
+INode *iTypeGetDerefTypeDcl(INode *node);
 
 // Look for named field/method in type
 INode *iTypeFindFnField(INode *type, Name *name);
 
 // Type check node, expecting it to be a type. Give error and return 0, if not.
-int itypeTypeCheck(TypeCheckState *pstate, INode **node);
+int iTypeTypeCheck(TypeCheckState *pstate, INode **node);
 
 // Return 1 if nominally (or structurally) identical, 0 otherwise.
 // Nodes must both be types, but may be name use or declare nodes.
-int itypeIsSame(INode *node1, INode *node2);
+int iTypeIsSame(INode *node1, INode *node2);
 
 // Calculate hash for a type for use indexing the type table
-size_t itypeHash(INode *type);
+size_t iTypeHash(INode *type);
 
 // Return 1 if nominally (or structurally) identical at runtime, 0 otherwise.
 // Nodes must both be types, but may be name use or declare nodes.
-int itypeIsRunSame(INode *node1, INode *node2);
+int iTypeIsRunSame(INode *node1, INode *node2);
 
-// Is totype equivalent or a subtype of fromtype
-TypeCompare itypeMatches(INode *totype, INode *fromtype, SubtypeConstraint constraint);
+// Is toType equivalent or a subtype of fromType
+TypeCompare iTypeMatches(INode *toType, INode *fromType, SubtypeConstraint constraint);
 
 // Return a type that is the supertype of both type nodes, or NULL if none found
-INode *itypeFindSuper(INode *type1, INode *type2);
+INode *iTypeFindSuper(INode *type1, INode *type2);
 
 // Add type mangle info to buffer
-char *itypeMangle(char *bufp, INode *vtype);
+char *iTypeMangle(char *bufp, INode *vtype);
 
 // Return true if type has a concrete and instantiable. 
 // False for Opaque structs, traits, functions 
-int itypeIsConcrete(INode *type);
+int iTypeIsConcrete(INode *type);
 
 // Return true if type has zero size (e.g., void, empty struct)
-int itypeIsZeroSize(INode *type);
+int iTypeIsZeroSize(INode *type);
 
 // Return true if type implements move semantics
-int itypeIsMove(INode *type);
+int iTypeIsMove(INode *type);
 
 // Return true if this is a generic type
-int itypeIsGenericType(INode *type);
+int iTypeIsGenericType(INode *type);
 
 #endif

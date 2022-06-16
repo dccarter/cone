@@ -1,4 +1,4 @@
-# This file sets the basic flags for the GAMBIT compiler
+# This file sets the basic flags for the cone compiler
 
 # Generate the C files
 set(CMAKE_CONE_COMPILE_OBJECT

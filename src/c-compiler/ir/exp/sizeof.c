@@ -38,6 +38,6 @@ void sizeofNameRes(NameResState *pstate, SizeofNode *node) {
 
 // Type check sizeof node
 void sizeofTypeCheck(TypeCheckState *pstate, SizeofNode *node) {
-    if (itypeTypeCheck(pstate, &node->type) == 0)
+    if (iTypeTypeCheck(pstate, &node->type) == 0)
         return;
 }

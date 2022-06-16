@@ -72,7 +72,7 @@ void arrayLitTypeCheckDimExp(TypeCheckState *pstate, ArrayNode *arrlit) {
             // Type of array literal is: array of elements whose type matches first value
             matchtype = ((IExpNode*)*nodesp)->vtype;
         }
-        else if (!itypeIsSame(((IExpNode*)*nodesp)->vtype, matchtype))
+        else if (!iTypeIsSame(((IExpNode *) *nodesp)->vtype, matchtype))
             errorMsgNode((INode*)*nodesp, ErrorBadArray, "Inconsistent type of array literal value");
     }
     arrlit->vtype = (INode*)newArrayNodeTyped((INode*)arrlit, arrlit->elems->used, matchtype);

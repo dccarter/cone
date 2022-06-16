@@ -13,10 +13,10 @@
 // Return expression node's "declared" type
 INode *iexpGetTypeDcl(INode *node) {
     if (isExpNode(node) || (node)->tag == VarDclTag || (node)->tag == FnDclTag || (node)->tag == FieldDclTag) {
-        return itypeGetTypeDcl(((IExpNode *)node)->vtype);
+        return iTypeGetTypeDcl(((IExpNode *) node)->vtype);
     }
     else {
-        //if (isTypeNode(node)) // caller should be using itypeGetTypeDcl()
+        //if (isTypeNode(node)) // caller should be using iTypeGetTypeDcl()
         //    return node;
         assert(0 && "Cannot obtain a type from this non-expression node");
         return unknownType;
@@ -25,7 +25,7 @@ INode *iexpGetTypeDcl(INode *node) {
 
 // Return type (or de-referenced type if ptr/ref)
 INode *iexpGetDerefTypeDcl(INode *node) {
-    return itypeGetDerefTypeDcl(iexpGetTypeDcl(node));
+    return iTypeGetDerefTypeDcl(iexpGetTypeDcl(node));
 }
 
 // Type check node we expect to be an expression. Return 0 if not.
@@ -44,7 +44,7 @@ TypeCompare iexpMatches(INode **from, INode *totype, SubtypeConstraint constrain
     INode *fromtype = iexpGetTypeDcl(*from);
 
     // Is totype a supertype of (or equivalent to) from's type?
-    TypeCompare result = itypeMatches(totype, fromtype, constraint);
+    TypeCompare result = iTypeMatches(totype, fromtype, constraint);
     if (result != NoMatch)
         return result;
 
@@ -58,7 +58,7 @@ TypeCompare iexpMatches(INode **from, INode *totype, SubtypeConstraint constrain
     }
 
     // Handle implicit conversion of untyped literal integer to any number type
-    INode *totyp = itypeGetTypeDcl(totype);
+    INode *totyp = iTypeGetTypeDcl(totype);
     if ((*from)->tag == ULitTag && ((*from)->flags & FlagUnkType)
         && (totyp->tag == UintNbrTag || totyp->tag == IntNbrTag || totyp->tag == FloatNbrTag)) {
         return ConvSubtype;  // For literals, we do not care if to a supertype (for user convenience)
@@ -87,7 +87,7 @@ int iexpCoerce(INode **from, INode *totype) {
         return 1;
 
     // Are types equivalent, or is 'to' a subtype of fromtypedcl?
-    INode *totypedcl = itypeGetTypeDcl(totype);
+    INode *totypedcl = iTypeGetTypeDcl(totype);
     switch (iexpMatches(from, totypedcl, Coercion)) {
     case NoMatch:
         return 0;
@@ -166,10 +166,10 @@ int iexpMultiInfer(INode *expectType, INode **maybeType, INode **from) {
             return EqMatch;
         }
         else {
-            if (itypeIsSame(*maybeType, fromType))
+            if (iTypeIsSame(*maybeType, fromType))
                 return EqMatch;
             // Try to find some supertype exists between the two types
-            INode *superType = itypeFindSuper(*maybeType, fromType);
+            INode *superType = iTypeFindSuper(*maybeType, fromType);
             if (superType) {
                 *maybeType = superType;
                 return ConvSubtype;
@@ -193,7 +193,7 @@ int iexpMultiInfer(INode *expectType, INode **maybeType, INode **from) {
         return match;
     }
     else {
-        if (!itypeIsSame(*maybeType, fromType))
+        if (!iTypeIsSame(*maybeType, fromType))
             *maybeType = expectType; // Set type-in-common as expected supertype
         return match;
     }
@@ -322,7 +322,7 @@ INode *iexpGetLvalInfo(INode *lval, INode **lvalperm, uint16_t *scope) {
 
 // Are types the same (no coercion)
 int iexpSameType(INode *to, INode **from) {
-    return itypeIsSame(iexpGetTypeDcl(to), iexpGetTypeDcl(*from));
+    return iTypeIsSame(iexpGetTypeDcl(to), iexpGetTypeDcl(*from));
 }
 
 // Retrieve the permission flags for the node
@@ -361,5 +361,5 @@ uint16_t iexpGetPermFlags(INode *node) {
 
 // Return true if value uses move semantics
 int iexpIsMove(INode *node) {
-    return itypeIsMove(((IExpNode *)node)->vtype);
+    return iTypeIsMove(((IExpNode *) node)->vtype);
 }

@@ -56,7 +56,7 @@ void fieldDclNameRes(NameResState *pstate, FieldDclNode *name) {
 // Type check field declaration against its initial value
 void fieldDclTypeCheck(TypeCheckState *pstate, FieldDclNode *name) {
     inodeTypeCheckAny(pstate, (INode**)&name->perm);
-    if (itypeTypeCheck(pstate, &name->vtype) == 0)
+    if (iTypeTypeCheck(pstate, &name->vtype) == 0)
         return;
 
     // An initializer need not be specified, but if not, it must have a declared type
@@ -79,6 +79,6 @@ void fieldDclTypeCheck(TypeCheckState *pstate, FieldDclNode *name) {
     }
 
     // Fields cannot hold a void or opaque struct value
-    if (!itypeIsConcrete(name->vtype))
+    if (!iTypeIsConcrete(name->vtype))
         errorMsgNode((INode*)name, ErrorInvType, "Field's type must be concrete and instantiable.");
 }

@@ -53,7 +53,7 @@ void constDclNameRes(NameResState *pstate, ConstDclNode *name) {
 
 // Type check constant against its initial value
 void constDclTypeCheck(TypeCheckState *pstate, ConstDclNode *name) {
-    if (itypeTypeCheck(pstate, &name->vtype) == 0)
+    if (iTypeTypeCheck(pstate, &name->vtype) == 0)
         return;
 
     // An initializer need not be specified, but if not, it must have a declared type

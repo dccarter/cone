@@ -99,22 +99,22 @@ void arrayTypeCheck(TypeCheckState *pstate, ArrayNode *node) {
         errorMsgNode((INode*)node, ErrorBadArray, "Exactly one element type must be specified");
     }
     INode **elemtypep = &nodesGet(node->elems, 0);
-    if (itypeTypeCheck(pstate, elemtypep) == 0) {
+    if (iTypeTypeCheck(pstate, elemtypep) == 0) {
         errorMsgNode((INode*)node, ErrorBadArray, "Element type must be a known type");
         return;
     }
-    if (!itypeIsConcrete(*elemtypep)) {
+    if (!iTypeIsConcrete(*elemtypep)) {
         errorMsgNode((INode*)node, ErrorInvType, "Element's type must be concrete and instantiable.");
     }
     // If the element's type if ThreadBound or Move, so is the array's type
-    ITypeNode *elemtype = (ITypeNode*)itypeGetTypeDcl(*elemtypep);
+    ITypeNode *elemtype = (ITypeNode*) iTypeGetTypeDcl(*elemtypep);
     node->flags |= elemtype->flags & (ThreadBound | MoveType);
 }
 
 // Compare two array types to see if they are equivalent
 int arrayEqual(ArrayNode *node1, ArrayNode *node2) {
     // Are element type and number of dimensions equivalent?
-    if (!itypeIsSame(arrayElemType((INode*)node1), arrayElemType((INode*)node2))
+    if (!iTypeIsSame(arrayElemType((INode *) node1), arrayElemType((INode *) node2))
         || node1->dimens->used != node2->dimens->used)
         return 0;
 
@@ -147,7 +147,7 @@ TypeCompare arrayMatches(ArrayNode *to, ArrayNode *from, SubtypeConstraint const
     }
 
     // We can subtype on element type sometimes
-    TypeCompare result = itypeMatches(arrayElemType((INode*)to), arrayElemType((INode*)from), constraint);
+    TypeCompare result = iTypeMatches(arrayElemType((INode *) to), arrayElemType((INode *) from), constraint);
     switch (result) {
     case ConvSubtype:
         return (constraint == Monomorph) ? result : NoMatch;

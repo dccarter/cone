@@ -114,7 +114,7 @@ void litNameRes(NameResState* pstate, IExpNode *node) {
 
 // Type check lit node
 void litTypeCheck(TypeCheckState* pstate, IExpNode *node, INode *expectType) {
-    itypeTypeCheck(pstate, &node->vtype);
+    iTypeTypeCheck(pstate, &node->vtype);
 }
 
 // Create a new string literal node

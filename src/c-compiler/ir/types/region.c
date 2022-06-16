@@ -8,7 +8,7 @@
 #include "../ir.h"
 
 int isRegion(INode *region, Name *namesym) {
-    region = itypeGetTypeDcl(region);
+    region = iTypeGetTypeDcl(region);
     if (region->tag == StructTag) {
         StructNode *rnode = (StructNode*)region;
         return rnode->namesym == namesym;
@@ -19,7 +19,7 @@ int isRegion(INode *region, Name *namesym) {
 int regionIsPtrU8(RefNode *ptrnode) {
     if (ptrnode->tag != PtrTag)
         return 0;
-    NbrNode *nbrnode = (NbrNode*)itypeGetTypeDcl(ptrnode->vtexp);
+    NbrNode *nbrnode = (NbrNode*) iTypeGetTypeDcl(ptrnode->vtexp);
     if (nbrnode != u8Type)
         return 0;
     return 1;
@@ -36,17 +36,17 @@ void regionAllocTypeCheck(INode *region) {
         errorMsgNode(region, ErrorInvType, "Region does not support allocation as it lacks _alloc static method.");
         return;
     }
-    FnSigNode *allocsig = (FnSigNode*)itypeGetTypeDcl(allocmeth->vtype);
+    FnSigNode *allocsig = (FnSigNode*) iTypeGetTypeDcl(allocmeth->vtype);
     if (allocsig->parms->used != 1) {
         errorMsgNode((INode*)allocmeth, ErrorInvType, "Region _alloc method needs single usize parm.");
         return;
     }
-    NbrNode *sizetype = (NbrNode *)itypeGetTypeDcl(iexpGetTypeDcl(nodesGet(allocsig->parms, 0)));
+    NbrNode *sizetype = (NbrNode *) iTypeGetTypeDcl(iexpGetTypeDcl(nodesGet(allocsig->parms, 0)));
     if (sizetype != usizeType) {
         errorMsgNode((INode*)allocmeth, ErrorInvType, "Region _alloc method needs single usize parm.");
         return;
     }
-    RefNode *rettype = (RefNode*)itypeGetTypeDcl(allocsig->rettype);
+    RefNode *rettype = (RefNode*) iTypeGetTypeDcl(allocsig->rettype);
     if (!regionIsPtrU8(rettype)) {
         errorMsgNode((INode*)allocmeth, ErrorInvType, "Region _alloc method must return *u8.");
         return;
@@ -56,13 +56,13 @@ void regionAllocTypeCheck(INode *region) {
     if (initmeth == NULL) {
         return;
     }
-    FnSigNode *initsig = (FnSigNode*)itypeGetTypeDcl(initmeth->vtype);
+    FnSigNode *initsig = (FnSigNode*) iTypeGetTypeDcl(initmeth->vtype);
     if (initsig->parms->used != 0) {
         errorMsgNode((INode*)initmeth, ErrorInvType, "Region init method may not have parameters.");
         return;
     }
-    INode *initrettype = itypeGetTypeDcl(initsig->rettype);
-    if (itypeMatches(initrettype, region, Coercion) != EqMatch) {
+    INode *initrettype = iTypeGetTypeDcl(initsig->rettype);
+    if (iTypeMatches(initrettype, region, Coercion) != EqMatch) {
         errorMsgNode((INode*)initmeth, ErrorInvType, "Region init method must return initial value.");
         return;
     }

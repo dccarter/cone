@@ -34,10 +34,10 @@ void arrayRefNameRes(NameResState *pstate, RefNode *node) {
 void arrayRefTypeCheck(TypeCheckState *pstate, RefNode *node) {
     if (node->perm == unknownType)
         node->perm = newPermUseNode(node->region == borrowRef ? roPerm : uniPerm);
-    itypeTypeCheck(pstate, &node->region);
-    itypeTypeCheck(pstate, (INode**)&node->perm);
+    iTypeTypeCheck(pstate, &node->region);
+    iTypeTypeCheck(pstate, (INode **) &node->perm);
     if (node->vtexp)
-        itypeTypeCheck(pstate, &node->vtexp);
+        iTypeTypeCheck(pstate, &node->vtexp);
 
     // Normalize reference type and point to its metadata
     node->typeinfo = typetblFind((INode*)node, refTypeInfoAlloc);
@@ -45,24 +45,24 @@ void arrayRefTypeCheck(TypeCheckState *pstate, RefNode *node) {
 
 // Compare two reference signatures to see if they are equivalent
 int arrayRefIsSame(RefNode *node1, RefNode *node2) {
-    return itypeIsSame(node1->vtexp, node2->vtexp)
-        && permIsSame(node1->perm, node2->perm)
-        && itypeIsSame(node1->region, node2->region);
+    return iTypeIsSame(node1->vtexp, node2->vtexp)
+           && permIsSame(node1->perm, node2->perm)
+           && iTypeIsSame(node1->region, node2->region);
 }
 
 // Calculate hash for a structural reference type
 size_t arrayRefHash(RefNode *node) {
     size_t hash = 5381 + node->tag;
-    hash = ((hash << 5) + hash) ^ itypeHash(node->region);
-    hash = ((hash << 5) + hash) ^ itypeHash(node->perm);
-    return ((hash << 5) + hash) ^ itypeHash(node->vtype);
+    hash = ((hash << 5) + hash) ^ iTypeHash(node->region);
+    hash = ((hash << 5) + hash) ^ iTypeHash(node->perm);
+    return ((hash << 5) + hash) ^ iTypeHash(node->vtype);
 }
 
 // Compare two reference signatures to see if they are equivalent at runtime
 int arrayRefIsRunSame(RefNode *node1, RefNode *node2) {
-    return itypeIsSame(node1->vtexp, node2->vtexp)
-        && itypeIsRunSame(node1->perm, node2->perm)
-        && itypeIsRunSame(node1->region, node2->region);
+    return iTypeIsSame(node1->vtexp, node2->vtexp)
+           && iTypeIsRunSame(node1->perm, node2->perm)
+           && iTypeIsRunSame(node1->region, node2->region);
 }
 
 // Will from reference coerce to a to reference (we know they are not the same)
@@ -92,13 +92,13 @@ TypeCompare arrayRefMatchesRef(RefNode *to, RefNode *from, SubtypeConstraint con
     switch (permGetFlags(to->perm) & (MayWrite | MayRead)) {
     case 0:
     case MayRead:
-        match = itypeMatches(to->vtexp, arrayElemType((INode*)arraytype), constraint); // covariant
+        match = iTypeMatches(to->vtexp, arrayElemType((INode *) arraytype), constraint); // covariant
         break;
     case MayWrite:
-        match = itypeMatches(arrayElemType((INode*)arraytype), to->vtexp, constraint); // contravariant
+        match = iTypeMatches(arrayElemType((INode *) arraytype), to->vtexp, constraint); // contravariant
         break;
     case MayRead | MayWrite:
-        return itypeIsSame(to->vtexp, arrayElemType((INode*)arraytype)) ? ConvSubtype : NoMatch; // invariant
+        return iTypeIsSame(to->vtexp, arrayElemType((INode *) arraytype)) ? ConvSubtype : NoMatch; // invariant
     }
     switch (match) {
     case EqMatch:

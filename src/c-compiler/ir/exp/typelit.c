@@ -53,7 +53,7 @@ void typeLitNbrCheck(TypeCheckState *pstate, FnCallNode *nbrlit, INode *type) {
     }
 
     INode *first = nodesGet(nbrlit->args, 0);
-    INode *firsttype = itypeGetTypeDcl(((IExpNode*)first)->vtype);
+    INode *firsttype = iTypeGetTypeDcl(((IExpNode *) first)->vtype);
     if (firsttype->tag != IntNbrTag && firsttype->tag != UintNbrTag && firsttype->tag != FloatNbrTag) 
         errorMsgNode((INode*)first, ErrorBadArray, "May only create number literal from another number");
 }
@@ -134,7 +134,7 @@ int typeLitStructReorder(FnCallNode *arrlit, StructNode *strnode, int private) {
 void typeLitStructCheck(TypeCheckState *pstate, FnCallNode *arrlit, StructNode *strnode) {
 
     // Ensure type has been type-checked, in case any rewriting/semantic analysis was needed
-    itypeTypeCheck(pstate, &arrlit->vtype);
+    iTypeTypeCheck(pstate, &arrlit->vtype);
 
     // Reorder the literal's arguments to match the type's field order
     if (typeLitStructReorder(arrlit, strnode, (INode*)strnode == pstate->typenode) == 0)
@@ -157,8 +157,8 @@ void typeLitStructCheck(TypeCheckState *pstate, FnCallNode *arrlit, StructNode *
 // Note:  We get here from FnCallTypeCheck, which has already checked that all arguments are expressions
 void typeLitTypeCheck(TypeCheckState *pstate, FnCallNode *arrlit) {
 
-    INode *littype = itypeGetTypeDcl(arrlit->vtype);
-    if (!itypeIsConcrete(arrlit->vtype))
+    INode *littype = iTypeGetTypeDcl(arrlit->vtype);
+    if (!iTypeIsConcrete(arrlit->vtype))
         errorMsgNode((INode*)arrlit, ErrorInvType, "Type must be concrete and instantiable.");
     else if (littype->tag == StructTag)
         typeLitStructCheck(pstate, arrlit, (StructNode*)littype);

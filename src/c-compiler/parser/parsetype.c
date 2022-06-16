@@ -36,7 +36,7 @@ VarDclNode *parseVarDcl(ParseState *parse, PermNode *defperm, uint16_t flags) {
     perm = parsePerm();
     if (perm->tag == UnknownTag)
         perm = (INode*)defperm;
-    INode *permdcl = itypeGetTypeDcl(perm);
+    INode *permdcl = iTypeGetTypeDcl(perm);
     if (permdcl == (INode*)mut1Perm || permdcl == (INode*)uniPerm || permdcl == (INode*)opaqPerm
         || (permdcl == (INode*)roPerm && !(flags & ParseMayConst)))
         errorMsgNode(perm, ErrorInvType, "Permission not valid for variable/field declaration");
@@ -137,7 +137,7 @@ FieldDclNode *parseFieldDcl(ParseState *parse, PermNode *defperm) {
 
     // Grab the permission type
     perm = parsePerm();
-    INode *permdcl = perm == unknownType? unknownType : itypeGetTypeDcl(perm);
+    INode *permdcl = perm == unknownType? unknownType : iTypeGetTypeDcl(perm);
     if (permdcl != (INode*)mutPerm && permdcl == (INode*)immPerm)
         errorMsgNode(perm, ErrorInvType, "Permission not valid for field declaration");
 

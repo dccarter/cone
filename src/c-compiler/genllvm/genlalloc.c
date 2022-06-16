@@ -49,7 +49,7 @@ LLVMValueRef genlfreeval = NULL;
 
 // If ref type is struct, dealias any fields holding rc/own references
 void genlDealiasFlds(GenState *gen, LLVMValueRef ref, RefNode *refnode) {
-    StructNode *strnode = (StructNode*)itypeGetTypeDcl(refnode->vtexp);
+    StructNode *strnode = (StructNode*) iTypeGetTypeDcl(refnode->vtexp);
     if (strnode->tag != StructTag)
         return;
     INode **nodesp;
@@ -135,18 +135,18 @@ void genlAllocFillArray(GenState *gen, LLVMValueRef nbrelems, ArrayNode *arrayli
 //   &ref.TValue or Some[&ref.TValue]
 //
 LLVMValueRef genlallocref(GenState *gen, RefNode *allocatenode) {
-    RefNode *reftype = (RefNode*)itypeGetTypeDcl(allocatenode->vtype);
+    RefNode *reftype = (RefNode*) iTypeGetTypeDcl(allocatenode->vtype);
     LLVMTypeRef reftypellvm = genlType(gen, (INode*)reftype);  // Make sure typeinfo is populated
     if (reftype->tag != RefTag && reftype->tag != ArrayRefTag) {
         // Extract reftype from Option type
         assert(reftype->tag == StructTag && (allocatenode->flags & FlagQues) && "Should be Option type");
         StructNode *optionTrait = (StructNode*)reftype;
         StructNode *someStruct = (StructNode*)nodesGet(optionTrait->derived, 1);
-        reftype = (RefNode*)itypeGetTypeDcl(((IExpNode*)nodelistGet(&someStruct->fields, 0))->vtype);
+        reftype = (RefNode*) iTypeGetTypeDcl(((IExpNode *) nodelistGet(&someStruct->fields, 0))->vtype);
         assert(reftype->tag == RefTag && "Option type did not have reftype");
     }
-    INode *region = itypeGetTypeDcl(reftype->region);
-    INode *perm = itypeGetTypeDcl(reftype->perm);
+    INode *region = iTypeGetTypeDcl(reftype->region);
+    INode *perm = iTypeGetTypeDcl(reftype->perm);
     LLVMTypeRef valuetypllvm = LLVMStructGetTypeAtIndex(LLVMGetElementType(reftype->typeinfo->ptrstructype), ValueField);
     LLVMTypeRef valueptrtyp = LLVMPointerType(valuetypllvm, 0);
 

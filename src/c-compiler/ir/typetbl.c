@@ -34,7 +34,7 @@ static size_t gTypeTblUsed = 0;            // Number of type table slots used
     size_t tbli; \
     for (tbli = typeHashMod(hash, gTypeTblAvail);;) { \
         tblp = &gTypeTable[tbli]; \
-        if (tblp->type==NULL || (tblp->hash == hash && itypeIsRunSame(tblp->type, type))) \
+        if (tblp->type==NULL || (tblp->hash == hash && iTypeIsRunSame(tblp->type, type))) \
             break; \
         tbli = typeHashMod(tbli + 1, gTypeTblAvail); \
     } \
@@ -80,7 +80,7 @@ void *typetblFind(INode *type, void *(*allocfn)()) {
     TypeTblEntry *slotp;
 
     // Hash provide string into table
-    size_t hash = itypeHash(type);
+    size_t hash = iTypeHash(type);
     typetblFindSlot(slotp, hash, type);
 
     // If not already a name, allocate memory for string and add to table

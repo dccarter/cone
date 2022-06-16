@@ -92,8 +92,8 @@ void varDclNameRes(NameResState *pstate, VarDclNode *name) {
 
 // Type check variable against its initial value
 void varDclTypeCheck(TypeCheckState *pstate, VarDclNode *name) {
-    itypeTypeCheck(pstate, (INode**)&name->perm);
-    if (itypeTypeCheck(pstate, &name->vtype) == 0)
+    iTypeTypeCheck(pstate, (INode **) &name->perm);
+    if (iTypeTypeCheck(pstate, &name->vtype) == 0)
         return;
 
     // An initializer need not be specified, but if not, it must have a declared type
@@ -116,7 +116,7 @@ void varDclTypeCheck(TypeCheckState *pstate, VarDclNode *name) {
     }
 
     // Variables cannot hold a void or opaque struct value
-    if (!itypeIsConcrete(name->vtype))
+    if (!iTypeIsConcrete(name->vtype))
         errorMsgNode((INode*)name, ErrorInvType, "Variable's type must be concrete and instantiable.");
 }
 

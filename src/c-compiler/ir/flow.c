@@ -43,7 +43,7 @@ void flowHandleMove(INode *node) {
 void flowInjectAliasNode(INode **nodep) {
     INode *vtype = ((IExpNode*)*nodep)->vtype;
     // No need for injected node if we are not dealing with rc references
-    RefNode *reftype = (RefNode *)itypeGetTypeDcl(vtype);
+    RefNode *reftype = (RefNode *) iTypeGetTypeDcl(vtype);
     if (reftype->tag != RefTag || !isRegion(reftype->region, rcName))
         return;
 
@@ -60,7 +60,7 @@ void flowInjectAliasNode(INode **nodep) {
 // Handle when we know we are either copying or moving a value
 // (e.g., for assignment or function arguments).
 void flowHandleMoveOrCopy(INode **nodep) {
-    uint16_t moveflag = itypeGetTypeDcl(((IExpNode *)*nodep)->vtype)->flags & MoveType;
+    uint16_t moveflag = iTypeGetTypeDcl(((IExpNode *) *nodep)->vtype)->flags & MoveType;
     if (iexpIsMove(*nodep)) {
         // Moving needs to deactivate source variable use
         flowHandleMove(*nodep);

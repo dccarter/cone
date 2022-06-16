@@ -47,8 +47,8 @@ int isNbr(INode *node) {
 
 // Return a type that is the supertype of both type nodes, or NULL if none found
 INode *nbrFindSuper(INode *type1, INode *type2) {
-    NbrNode *typ1 = (NbrNode *)itypeGetTypeDcl(type1);
-    NbrNode *typ2 = (NbrNode *)itypeGetTypeDcl(type2);
+    NbrNode *typ1 = (NbrNode *) iTypeGetTypeDcl(type1);
+    NbrNode *typ2 = (NbrNode *) iTypeGetTypeDcl(type2);
 
     return typ1->bits >= typ2->bits ? type1 : type2;
 }

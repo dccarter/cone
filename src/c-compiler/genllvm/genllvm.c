@@ -119,7 +119,7 @@ void genlGloVar(GenState *gen, VarDclNode *varnode) {
 
     // Mark initialized, immutable global variable as constant,
     // so it goes into a faster memory page that we know we will never be mutated
-    if (itypeGetTypeDcl(varnode->perm) == (INode*)immPerm)
+    if (iTypeGetTypeDcl(varnode->perm) == (INode*)immPerm)
         LLVMSetGlobalConstant(varnode->llvmvar, 1);
 }
 
@@ -146,7 +146,7 @@ char *genlMangleMethName(char *workbuf, FnDclNode *node) {
     INode **nodesp;
     for (nodesFor(fnsig->parms, cnt, nodesp)) {
         *bufp++ = ':';
-        bufp = itypeMangle(bufp, ((IExpNode *)*nodesp)->vtype);
+        bufp = iTypeMangle(bufp, ((IExpNode *) *nodesp)->vtype);
     }
     *bufp = '\0';
 

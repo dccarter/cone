@@ -101,7 +101,7 @@ void assignMultRetCheck(TypeCheckState *pstate, TupleNode *lval, INode **rval) {
     for (nodesFor(lnodes, lcnt, lnodesp)) {
         if (iexpIsLvalError(*lnodesp) == 0)
             continue;
-        if (itypeIsSame(((IExpNode *)*lnodesp)->vtype, *rtypep++) == 0)
+        if (iTypeIsSame(((IExpNode *) *lnodesp)->vtype, *rtypep++) == 0)
             errorMsgNode(*lnodesp, ErrorInvType, "Return value's type does not match lval's type");
     }
 }

@@ -121,7 +121,7 @@ StructNode *structGetBaseTrait(StructNode *node) {
     // Handle if trait is a genericized type
     if (trait->tag == FnCallTag)
         trait = ((FnCallNode*)trait)->objfn;
-    return structGetBaseTrait((StructNode*)itypeGetTypeDcl(trait));
+    return structGetBaseTrait((StructNode*) iTypeGetTypeDcl(trait));
 }
 
 // Type check when a type specifies a base trait that has a closed number of variants
@@ -171,9 +171,9 @@ void structTypeCheck(TypeCheckState *pstate, StructNode *node) {
 
     // Handle when a base trait is specified
     if (node->basetrait) {
-        if (itypeTypeCheck(pstate, &node->basetrait) == 0)
+        if (iTypeTypeCheck(pstate, &node->basetrait) == 0)
             return;
-        StructNode *basetrait = (StructNode*)itypeGetTypeDcl(node->basetrait);
+        StructNode *basetrait = (StructNode*) iTypeGetTypeDcl(node->basetrait);
         if (basetrait->tag != StructTag || !(basetrait->flags & TraitType)) {
             errorMsgNode(node->basetrait, ErrorInvType, "Base trait must be a trait");
         }
@@ -204,10 +204,10 @@ void structTypeCheck(TypeCheckState *pstate, StructNode *node) {
     while (fldpos >= 0) {
         FieldDclNode *field = (FieldDclNode*)*fldnodesp;
         if (field->flags & IsMixin) {
-            if (itypeTypeCheck(pstate, &field->vtype) == 0)
+            if (iTypeTypeCheck(pstate, &field->vtype) == 0)
                 return;
             // A dummy mixin field requesting we mixin its fields and methods
-            StructNode *trait = (StructNode*)itypeGetTypeDcl(field->vtype);
+            StructNode *trait = (StructNode*) iTypeGetTypeDcl(field->vtype);
             if (trait->tag != StructTag || !(trait->flags & TraitType)) {
                 errorMsgNode(field->vtype, ErrorInvType, "mixin must be a trait");
             }
@@ -256,12 +256,12 @@ void structTypeCheck(TypeCheckState *pstate, StructNode *node) {
         // Number field indexes to reflect their possibly altered position
         ((FieldDclNode*)*nodesp)->index = index++;
         // Notice if a field's threadbound or movetype infects the struct
-        ITypeNode *fldtype = (ITypeNode*)itypeGetTypeDcl(((IExpNode*)(*nodesp))->vtype);
+        ITypeNode *fldtype = (ITypeNode*) iTypeGetTypeDcl(((IExpNode *) (*nodesp))->vtype);
         infectFlag |= fldtype->flags & (ThreadBound | MoveType);
         // Handle impact of fields that are opaque or non-zero-size
-        if (!itypeIsConcrete((INode*)fldtype))
+        if (!iTypeIsConcrete((INode *) fldtype))
             node->flags |= OpaqueType;
-        if (!itypeIsZeroSize((INode*)fldtype))
+        if (!iTypeIsZeroSize((INode *) fldtype))
             isZeroSize = 0;
 
         if (fldtype->tag == EnumTag && !((*nodesp)->flags & IsTagField)) {
@@ -396,7 +396,7 @@ void structMakeVtable(StructNode *node) {
     }
     for (nodelistFor(&node->fields, cnt, nodesp)) {
         FieldDclNode *field = (FieldDclNode *)*nodesp;
-        INode *fieldtyp = itypeGetTypeDcl(field->vtype);
+        INode *fieldtyp = iTypeGetTypeDcl(field->vtype);
         if (field->namesym->namestr != '_' && fieldtyp->tag != EnumTag) {
             field->vtblidx = vtblidx++;
             nodesAdd(&vtable->methfld, *nodesp);
@@ -460,7 +460,7 @@ TypeCompare structMatches(StructNode *to, INode *fromdcl, SubtypeConstraint cons
     if (to->flags & SameSize) {
         StructNode *super = (StructNode *)fromdcl;
         while (super->basetrait) {
-            StructNode *base = (StructNode*)itypeGetTypeDcl(super->basetrait);
+            StructNode *base = (StructNode*) iTypeGetTypeDcl(super->basetrait);
             // If it is a valid supertype trait, indicate that it requires coercion
             if (to == base) {
                 // With most constraints, a found base trait means we have a valid subtype.
@@ -535,12 +535,13 @@ TypeCompare structMatches(StructNode *to, INode *fromdcl, SubtypeConstraint cons
 
 // Return a type that is the supertype of both type nodes, or NULL if none found
 INode *structFindSuper(INode *type1, INode *type2) {
-    StructNode *typ1 = (StructNode *)itypeGetTypeDcl(type1);
-    StructNode *typ2 = (StructNode *)itypeGetTypeDcl(type2);
+    StructNode *typ1 = (StructNode *) iTypeGetTypeDcl(type1);
+    StructNode *typ2 = (StructNode *) iTypeGetTypeDcl(type2);
 
     // The only supertype supported with structs is they both use the same, same-sized base trait
     if (typ1->basetrait && typ2->basetrait 
-        && structGetBaseTrait((StructNode*)itypeGetTypeDcl(typ1->basetrait)) == structGetBaseTrait((StructNode*)itypeGetTypeDcl(typ2->basetrait))
+        && structGetBaseTrait((StructNode*) iTypeGetTypeDcl(typ1->basetrait)) == structGetBaseTrait((StructNode*) iTypeGetTypeDcl(
+            typ2->basetrait))
         && (typ1->flags & SameSize))
         return typ1->basetrait;
     return NULL;
@@ -549,12 +550,13 @@ INode *structFindSuper(INode *type1, INode *type2) {
 // Return a type that is the supertype of both type nodes, or NULL if none found
 // This is used by reference types, where same-sized is no longer a requirement
 INode *structRefFindSuper(INode *type1, INode *type2) {
-    StructNode *typ1 = (StructNode *)itypeGetTypeDcl(type1);
-    StructNode *typ2 = (StructNode *)itypeGetTypeDcl(type2);
+    StructNode *typ1 = (StructNode *) iTypeGetTypeDcl(type1);
+    StructNode *typ2 = (StructNode *) iTypeGetTypeDcl(type2);
 
     // The only supertype supported with structs is they both use the same base trait
     if (typ1->basetrait && typ2->basetrait
-        && structGetBaseTrait((StructNode*)itypeGetTypeDcl(typ1->basetrait)) == structGetBaseTrait((StructNode*)itypeGetTypeDcl(typ2->basetrait)))
+        && structGetBaseTrait((StructNode*) iTypeGetTypeDcl(typ1->basetrait)) == structGetBaseTrait((StructNode*) iTypeGetTypeDcl(
+            typ2->basetrait)))
         return typ1->basetrait;
     return NULL;
 }

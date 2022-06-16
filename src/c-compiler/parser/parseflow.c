@@ -56,7 +56,7 @@ INode *parseReturn(ParseState *parse) {
 // (it looks like, and is returned as, a variable declaration)
 VarDclNode *parseBindVarDcl(ParseState *parse) {
     INode *perm = parsePerm();
-    INode *permdcl = perm==unknownType? unknownType : itypeGetTypeDcl(perm);
+    INode *permdcl = perm==unknownType? unknownType : iTypeGetTypeDcl(perm);
     if (permdcl != (INode*)mutPerm && permdcl != (INode*)immPerm)
         errorMsgNode(perm, ErrorInvType, "Permission not valid for pattern match binding");
 

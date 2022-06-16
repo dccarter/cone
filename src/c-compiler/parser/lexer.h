@@ -23,10 +23,16 @@ typedef enum {
     SameStmtBlock     // Block statements on same line as statement
 } LexBlockMode;
 
+typedef enum {
+    StrExprOff,
+    StrExprExpectStr,
+    StrExprExpectExpr
+} LexStrExprState;
+
 // Information about a block on the block stack
 typedef struct {
     uint16_t blkindent;       // Indentation of stmt that started block
-    uint16_t paranscnt;       // How many open parantheses/brackets in block
+    uint16_t paranscnt;       // How many open parentheses/brackets in block
     LexBlockMode blkmode;     // Lexer block mode
 } LexBlockInfo;
 
@@ -58,6 +64,8 @@ typedef struct Lexer {
     uint32_t linenbr;    // Current line number
     uint32_t flags;        // Lexer flags
     uint16_t toktype;    // TokenTypes
+
+    int8_t strexpr;     // string expression parse state
 
     // ** Significant indentation state -->
     int16_t curindent;       // Indentation level of current line
@@ -137,6 +145,8 @@ enum TokenTypes {
     ShrEqToken,        // '>>='
     IncrToken,         // '++'
     DecrToken,         // '--'
+    LStrExprToken,     // f"
+    RStrExprToken,     // "
 
     // Keywords
     IncludeToken,  // 'include'

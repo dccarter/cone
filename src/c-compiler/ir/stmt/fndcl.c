@@ -122,7 +122,7 @@ void fnDclTypeCheck(TypeCheckState *pstate, FnDclNode *fnnode) {
     if (fnnode->genericinfo)
         return;
 
-    itypeTypeCheck(pstate, &fnnode->vtype);
+    iTypeTypeCheck(pstate, &fnnode->vtype);
     // No need to type check function body if no body or is a default method of a trait
     if (!fnnode->value 
         || ((fnnode->flags & FlagMethFld) && pstate->typenode->tag == StructTag && (pstate->typenode->flags & TraitType)))

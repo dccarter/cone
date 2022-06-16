@@ -98,7 +98,7 @@ void ifExhaustCheck(IfNode *ifnode, CastNode *condition) {
         for (nodesFor(ifnode->condblk, cnt, nodesp)) {
             if ((*nodesp)->tag == IsTag) {
                 CastNode *isnode = (CastNode*)*nodesp;
-                if (isnode->exp == condition->exp && itypeGetDerefTypeDcl(isnode->typ) == *varnodesp) {
+                if (isnode->exp == condition->exp && iTypeGetDerefTypeDcl(isnode->typ) == *varnodesp) {
                     found = 1;
                     if (cnt < lowestcnt)
                         lowestcnt = cnt;
